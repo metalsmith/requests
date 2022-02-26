@@ -1,10 +1,11 @@
 {
-  "name": "@metalsmith/~core-plugin~",
+  "name": "@metalsmith/requests",
   "private": true,
   "version": "0.1.0",
-  "description": "A Metalsmith plugin to ...",
+  "description": "A metalsmith plugin to query API's and add the results to files and metadata",
   "keywords": [
-    "~core-plugin~",
+    "requests",
+    "fetch",
     "metalsmith-plugin",
     "metalsmith",
     "static-site"
@@ -12,7 +13,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/metalsmith/~core-plugin~.git"
+    "url": "git+https://github.com/metalsmith/requests.git"
   },
   "files": [
     "lib",
@@ -25,11 +26,13 @@
   "author": "Kevin Van Lierde (https://webketje.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/metalsmith/~core-plugin~/issues"
+    "url": "https://github.com/metalsmith/requests/issues"
   },
-  "homepage": "https://github.com/metalsmith/~core-plugin~#readme",
+  "homepage": "https://github.com/metalsmith/requests#readme",
   "dependencies": {
-    "debug": "^4.3.3"
+    "debug": "^4.3.3",
+    "dset": "^3.1.1",
+    "regexparam": "^2.0.0"
   },
   "devDependencies": {
     "assert-dir-equal": "^1.1.0",
