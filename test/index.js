@@ -1,6 +1,7 @@
 const assert = require('assert')
 const equals = require('assert-dir-equal')
-const { describe, it } = require('mocha')
+const debug = require('debug')
+const { describe, it, before, after } = require('mocha')
 const Metalsmith = require('metalsmith')
 const { name } = require('../package.json')
 const plugin = require('..')
@@ -13,6 +14,23 @@ const googleHumansTxt =
   "Google is built by a large team of engineers, designers, researchers, robots, and others in many different sites across the globe. It is updated continuously, and built with more tools and technologies than we can shake a stick at. If you'd like to help us out, see careers.google.com.\n"
 
 describe('@metalsmith/requests', function () {
+  let server
+
+  before(() => {
+    const { createServer } = require('http')
+
+    function handler(req, res) {
+      res.setHeader('Content-Type', 'application/json')
+      res.end('{invalid_json')
+    }
+    server = createServer(handler)
+    server.listen('3000')
+  })
+
+  after(() => {
+    server.close()
+  })
+
   it('should export a named plugin function matching package.json name', function () {
     const namechars = name.split('/')[1]
     const camelCased = namechars.split('').reduce((str, char, i) => {
@@ -32,39 +50,71 @@ describe('@metalsmith/requests', function () {
       })
   })
 
-  it("should add a response's content to metadata", function (done) {
-    const ms = Metalsmith(fixture('default'))
-    ms.use(
-      plugin({
-        url: 'https://www.google.com/humans.txt',
-        out: { metadata: 'googlehumans' }
-      })
-    ).process((err) => {
-      if (err) done(err)
-      assert.strictEqual(ms.metadata().googlehumans, googleHumansTxt)
-      done()
-    })
-  })
-
-  it("should add a response's content to a file, appending its data, and preserving its other metadata", function (done) {
-    const ms = Metalsmith(fixture('default'))
-    ms.use(function (files) {
-      files['test.md'] = {
-        layout: 'default.njk',
-        contents: Buffer.from('testest')
+  describe('should support out option matrix', function () {
+    it('!out.key && !out.path: should default out option to debug logging', function (done) {
+      let res
+      const cachedDebugState = debug.enabled('@metalsmith/requests')
+      debug.enable('@metalsmith/requests')
+      debug.log = (log) => {
+        res = log
       }
-    })
-      .use(
-        plugin({
-          url: 'https://www.google.com/humans.txt',
-          out: { path: 'test.md' }
+      debug.log.color = 1
+      Metalsmith(fixture('default'))
+        .use(plugin('https://www.google.com/humans.txt'))
+        .process((err) => {
+          if (err) done(err)
+          assert.strictEqual(
+            res.slice(0, 72),
+            '  \x1B[38;5;161;1m@metalsmith/requests \x1B[0m{ data: \x1B[32m"Google is built by'
+          )
+
+          if (!cachedDebugState) debug.disable()
+          done()
         })
-      )
-      .process((err, files) => {
+    })
+
+    it("out.key && !out.path: should assign a response's data to global metadata", function (done) {
+      const ms = Metalsmith(fixture('default'))
+      const files = {}
+      const config = {
+        url: 'https://www.google.com/humans.txt',
+        out: { key: 'googlehumans' }
+      }
+      plugin(config)(files, ms, (err) => {
         if (err) done(err)
-        assert.strictEqual(files['test.md'].contents.toString(), 'testest' + googleHumansTxt)
+        assert.strictEqual(ms.metadata().googlehumans, googleHumansTxt)
         done()
       })
+    })
+
+    it("!out.key && out.path: should assign a response's data to a file's 'contents' by default", function (done) {
+      const ms = Metalsmith(fixture('default'))
+      const files = { 'test.md': {} }
+      const config = {
+        url: 'https://www.google.com/humans.txt',
+        out: { path: 'test.md' }
+      }
+      plugin(config)(files, ms, (err) => {
+        if (err) done(err)
+        assert.strictEqual(files['test.md'].contents.toString(), googleHumansTxt)
+        done()
+      })
+    })
+
+    it("out.key && out.path: should assign a response's data to file metadata at files[out.path][out.key]", function (done) {
+      const ms = Metalsmith(fixture('default'))
+      const files = { 'test.md': { layout: 'default.njk' } }
+      const config = {
+        url: 'https://www.google.com/humans.txt',
+        out: { path: 'test.md', key: 'request' }
+      }
+      plugin(config)(files, ms, (err) => {
+        if (err) done(err)
+        assert.strictEqual(files['test.md'].request, googleHumansTxt)
+        assert.strictEqual(files['test.md'].layout, 'default.njk')
+        done()
+      })
+    })
   })
 
   it('should treat files with a "request" key in metadata as entries', function (done) {
@@ -77,7 +127,23 @@ describe('@metalsmith/requests', function () {
       })
   })
 
-  it('should allow specifying a single request config', function (done) {
+  it('should replace path placeholders in out and url options accordingly', function (done) {
+    Metalsmith(fixture('placeholders'))
+      .use(
+        plugin({
+          url: 'https://webketje.com/assets/css/:filename.css',
+          out: { path: ':filename.css' },
+          params: [{ filename: 'main' }, { filename: 'style' }]
+        })
+      )
+      .build((err) => {
+        if (err) done(err)
+        equals(fixture('placeholders/build'), fixture('placeholders/expected'))
+        done()
+      })
+  })
+
+  it('should allow specifying shorthands', function (done) {
     Metalsmith(fixture('single-request-option'))
       .use(
         plugin({
@@ -92,13 +158,13 @@ describe('@metalsmith/requests', function () {
       })
   })
 
-  it('should parse a response as JSON when "out.json" is set', function (done) {
+  it("should auto-parse a response as JSON when the response's Content-Type header is application/json", function (done) {
     const ms = Metalsmith(fixture('default'))
     ms.use(
       plugin({
         // parameterized w options
         url: 'https://api.github.com/repos/metalsmith/drafts/contents/README.md',
-        out: { metadata: 'readme', json: true },
+        out: { key: 'readme' },
         options: {
           method: 'GET',
           auth: `metalsmith:${process.env.GITHUB_TOKEN}`,
@@ -132,41 +198,23 @@ describe('@metalsmith/requests', function () {
     ms.use(
       plugin({
         url: 'https://api.github.com/graphql',
-        out: { metadata: 'sassreadme' },
-        body: JSON.stringify({ query: gqlQuery }),
+        out: { key: 'sassreadme' },
+        body: { query: gqlQuery },
         options: {
           method: 'POST',
           headers: {
-            Authorization: 'bearer ' + process.env.GITHUB_TOKEN,
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
+            Authorization: 'bearer ' + process.env.GITHUB_TOKEN
           }
         }
       })
     ).process((err) => {
       if (err) done(err)
       assert.strictEqual(
-        ms.metadata().sassreadme.slice(0, 82),
-        '{"data":{"repository":{"object":{"text":"# @metalsmith/sass\\n\\nA Metalsmith plugin'
+        ms.metadata().sassreadme.data.repository.object.text.slice(0, 39),
+        '# @metalsmith/sass\n\nA Metalsmith plugin'
       )
       done()
     })
-  })
-
-  it('should replace path placeholders in out and url options accordingly', function (done) {
-    Metalsmith(fixture('placeholders'))
-      .use(
-        plugin({
-          url: 'https://webketje.com/assets/css/:filename.css',
-          out: { path: ':filename.css' },
-          params: [{ filename: 'main' }, { filename: 'style' }]
-        })
-      )
-      .build((err) => {
-        if (err) done(err)
-        equals(fixture('placeholders/build'), fixture('placeholders/expected'))
-        done()
-      })
   })
 
   describe('should throw error', function () {
@@ -175,11 +223,25 @@ describe('@metalsmith/requests', function () {
         .use(
           plugin({
             url: 'ftp://bad-protocol.com',
-            out: { metadata: 'bad' }
+            out: { key: 'bad' }
           })
         )
         .process((err) => {
-          assert.strictEqual(err.code, 'unsupported_protocol')
+          assert.strictEqual(err.name, 'unsupported_protocol')
+          done()
+        })
+    })
+
+    it('"ERR_INVALID_URL" when the URL is invalid', function (done) {
+      Metalsmith(fixture('default'))
+        .use(
+          plugin({
+            url: 'random-invalid',
+            out: { key: 'bad' }
+          })
+        )
+        .process((err) => {
+          assert.strictEqual(err.toString(), 'TypeError [ERR_INVALID_URL]: Invalid URL')
           done()
         })
     })
@@ -189,14 +251,14 @@ describe('@metalsmith/requests', function () {
         .use(
           plugin({
             url: 'http://bad-httpmethod.com',
-            out: { metadata: 'bad' },
+            out: { key: 'bad' },
             options: {
               method: 'FAULTY'
             }
           })
         )
         .process((err) => {
-          assert.strictEqual(err.code, 'invalid_http_method')
+          assert.strictEqual(err.name, 'invalid_http_method')
           done()
         })
     })
@@ -210,7 +272,21 @@ describe('@metalsmith/requests', function () {
           })
         )
         .process((err) => {
-          assert.strictEqual(err.code, 'invalid_outconfig')
+          assert.strictEqual(err.name, 'invalid_outconfig')
+          done()
+        })
+    })
+
+    it('"invalid_outconfig" when the outconfig is of the wrong type', function (done) {
+      Metalsmith(fixture('default'))
+        .use(
+          plugin({
+            url: 'http://bad-outoption.com',
+            out: 124124
+          })
+        )
+        .process((err) => {
+          assert.strictEqual(err.name, 'invalid_outconfig')
           done()
         })
     })
@@ -223,7 +299,7 @@ describe('@metalsmith/requests', function () {
         .use(
           plugin({
             url: 'https://graphql.github.com/graphql',
-            out: { metadata: 'bad' },
+            out: { key: 'bad' },
             body: JSON.stringify({ query: 'query test { view { user { login }}}' }),
             options: {
               headers: {
@@ -235,20 +311,20 @@ describe('@metalsmith/requests', function () {
           })
         )
         .process((err) => {
-          assert.strictEqual(err.code, 'http_error')
+          assert.strictEqual(err.name, 'http_error')
           done()
         })
     })
 
-    it('"invalid_json" when "out.json" is set and the response is invalid', function (done) {
+    it('"invalid_json" when the response has Content-Type: application/json and is malformed', function (done) {
       const ms = Metalsmith(fixture('default'))
       ms.use(
         plugin({
-          url: 'https://www.google.com/humans.txt',
-          out: { metadata: 'googlehumans', json: true }
+          url: 'http://localhost:3000',
+          out: { key: 'googlehumans' }
         })
       ).process((err) => {
-        assert.strictEqual(err.code, 'invalid_json')
+        assert.strictEqual(err.name, 'invalid_json')
         done()
       })
     })
