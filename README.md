@@ -70,14 +70,14 @@ metalsmith.use(
 
 You can pass a single requests config, or an array of request configs to `@metalsmith/requests`. Every request config has the following options:
 
-| Property  | Type                 | Description                                                                                                                                                                                                                                        |
-| :-------- | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `url`     | `string`             | A url or url pattern with [params placeholders](#params-placeholders). Supported protocols are `http:`,`https:`, and `file:`.                                                                                                                      |
-| `params`  | `Object[]`           | _(optional)_ An object with params to fill placeholders in the url pattern.                                                                                                                                                                        |
-| `body`    | `string`             | _(optional)_ The request body                                                                                                                                                                                                                      |
-| `out`     | `{path:string, key:string}` | _(optional)_ An object of the form `{ metadata: 'key.path.target' }` to store the response in metadata, or an object of the form `{ path: 'path/to/file.ext' }` to store the response in a file in the `build`                                     |
-|           | `Function`           | If you need more flexibility, you can specify a callback instead, which is passed a result object with the data (response body) and request config, and the metalsmith files and instance: `out: ({ data, config }, files, metalsmith) => { ... }` |
-| `options` | `Object`             | _(optional)_ An object with options you would pass to [Node's https.request](). If `method` is not set, it will default to `GET`. `@metalsmith/requests` also adds a `User-Agent: @metalsmith/requests` header if no other headers are set.        |
+| Property  | Type                        | Description                                                                                                                                                                                                                                        |
+| :-------- | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`     | `string`                    | A url or url pattern with [params placeholders](#params-placeholders). Supported protocols are `http:`,`https:`, and `file:`.                                                                                                                      |
+| `params`  | `Object[]`                  | _(optional)_ An object with params to fill placeholders in the url pattern.                                                                                                                                                                        |
+| `body`    | `string`                    | _(optional)_ The request body                                                                                                                                                                                                                      |
+| `out`     | `{path:string, key:string}` | _(optional)_ An object of the form `{ key: 'key.path.target' }` to store the response in metadata, or an object of the form `{ path: 'path/to/file.ext' }` to store the response in a file in the `build`                                          |
+|           | `Function`                  | If you need more flexibility, you can specify a callback instead, which is passed a result object with the data (response body) and request config, and the metalsmith files and instance: `out: (response, config, files, metalsmith) => { ... }` |
+| `options` | `Object`                    | _(optional)_ An object with options you would pass to [Node's https.request](). If `method` is not set, it will default to `GET`. `@metalsmith/requests` also adds a `User-Agent: @metalsmith/requests` header if no other headers are set.        |
 
 You can also pass a string (`.use(['https://<url>'])`) as shorthand, which will expand to `{ url: '<url>', options: { method: 'GET', headers: { 'User-Agent': '@metalsmith/requests' }}}`.
 
@@ -113,6 +113,7 @@ metalsmith.use(
 ```
 
 ### GraphQL support
+
 git
 This plugin also supports GraphQL, here's an example calling the Github API:
 
