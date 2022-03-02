@@ -1,6 +1,5 @@
 {
   "name": "@metalsmith/requests",
-  "private": true,
   "version": "0.1.0",
   "description": "A metalsmith plugin to query API's and add the results to files and metadata",
   "keywords": [
@@ -24,7 +23,7 @@
     "test": "test"
   },
   "author": "Kevin Van Lierde (https://webketje.com)",
-  "license": "MIT",
+  "license": "LGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/metalsmith/requests/issues"
   },
