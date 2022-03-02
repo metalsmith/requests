@@ -58,16 +58,11 @@ describe('@metalsmith/requests', function () {
       debug.log = (log) => {
         res = log
       }
-      debug.log.color = 1
       Metalsmith(fixture('default'))
         .use(plugin('https://www.google.com/humans.txt'))
         .process((err) => {
           if (err) done(err)
-          assert.strictEqual(
-            res.slice(0, 72),
-            '  \x1B[38;5;161;1m@metalsmith/requests \x1B[0m{ data: \x1B[32m"Google is built by'
-          )
-
+          assert(!!res.match('Google is built by a large team of engineers'))
           if (!cachedDebugState) debug.disable()
           done()
         })
@@ -162,7 +157,6 @@ describe('@metalsmith/requests', function () {
     const ms = Metalsmith(fixture('default'))
     ms.use(
       plugin({
-        // parameterized w options
         url: 'https://api.github.com/repos/metalsmith/drafts/contents/README.md',
         out: { key: 'readme' },
         options: {
@@ -241,7 +235,7 @@ describe('@metalsmith/requests', function () {
           })
         )
         .process((err) => {
-          assert.strictEqual(err.toString(), 'TypeError [ERR_INVALID_URL]: Invalid URL')
+          assert.strictEqual(err.toString().slice(0, 40), 'TypeError [ERR_INVALID_URL]: Invalid URL')
           done()
         })
     })

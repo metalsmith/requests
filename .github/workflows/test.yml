@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: ['master']
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  DEBUG_COLORS: 0
+
 jobs:
   pre-test:
     runs-on: ubuntu-latest
