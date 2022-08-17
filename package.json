@@ -36,10 +36,10 @@
   },
   "homepage": "https://github.com/metalsmith/requests#readme",
   "dependencies": {
-    "debug": "^4.3.3",
+    "debug": "^4.3.4",
     "dset": "^3.1.1",
     "httpie": "^1.1.2",
-    "regexparam": "^2.0.0"
+    "regexparam": "^2.0.1"
   },
   "devDependencies": {
     "assert-dir-equal": "^1.1.0",
