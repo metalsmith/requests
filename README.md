@@ -34,8 +34,7 @@ yarn add @metalsmith/requests
 Pass `@metalsmith/requests` to `metalsmith.use` :
 
 ```js
-const metalsmith = require('metalsmith')
-const requests = require('@metalsmith/requests')
+import requests from '@metalsmith/requests'
 
 // defaults, process files with the `request` metadata key
 metalsmith.use(requests())

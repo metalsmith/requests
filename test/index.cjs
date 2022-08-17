@@ -1,9 +1,12 @@
+/* eslint-env node, mocha */
 const assert = require('assert')
 const equals = require('assert-dir-equal')
 const debug = require('debug')
-const { describe, it, before, after } = require('mocha')
+
 const Metalsmith = require('metalsmith')
 const { name } = require('../package.json')
+
+/* eslint-disable-next-line node/no-missing-require */
 const plugin = require('..')
 
 function fixture(p) {
@@ -171,7 +174,7 @@ describe('@metalsmith/requests', function () {
       if (err) done(err)
       assert.strictEqual(
         ms.metadata().readme.download_url,
-        'https://raw.githubusercontent.com/metalsmith/drafts/master/README.md'
+        'https://raw.githubusercontent.com/metalsmith/drafts/main/README.md'
       )
       done()
     })
@@ -183,7 +186,7 @@ describe('@metalsmith/requests', function () {
     }
     const gqlQuery = `query {
         repository(owner: "metalsmith", name: "sass") {
-          object(expression: "master:README.md") {
+          object(expression: "main:README.md") {
             ... on Blob { text }
           }
         }
