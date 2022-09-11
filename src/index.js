@@ -2,7 +2,7 @@ import { dset } from 'dset'
 import { send } from 'httpie'
 import createDebug from 'debug'
 import { URL } from 'url'
-import regexparam from 'regexparam'
+import { inject } from 'regexparam'
 
 const debug = createDebug('@metalsmith/requests')
 const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
@@ -141,13 +141,13 @@ function processRequestConfig(options, onerror) {
   const ret = paramsets.map((paramset) => {
     return {
       params: paramset,
-      url: regexparam.inject(url.href, paramset),
+      url: inject(url.href, paramset),
       out:
         typeof out === 'function'
           ? out
           : {
-              key: out.key ? regexparam.inject(out.key, paramset).replace(/^\//, '') : null,
-              path: out.path ? regexparam.inject(out.path, paramset).replace(/^\//, '') : null
+              key: out.key ? inject(out.key, paramset).replace(/^\//, '') : null,
+              path: out.path ? inject(out.path, paramset).replace(/^\//, '') : null
             },
       httpOptions,
       body: options.body ? options.body : null,
