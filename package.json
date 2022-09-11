@@ -1,6 +1,6 @@
 {
   "name": "@metalsmith/requests",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A metalsmith plugin to query API's and add the results to files and metadata",
   "keywords": [
     "requests",
