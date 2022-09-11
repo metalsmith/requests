@@ -144,7 +144,7 @@ metalsmith.use(
     out: { path: 'core-plugins/download-counts/:plugin.md', key: 'downloadCount' },
     options: {
       method: 'GET',
-      auth: `metalsmith:${process.env.GITHUB_TOKEN}`
+      auth: `metalsmith:${process.env.NPM_TOKEN}`
     }
   })
 )

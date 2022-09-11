@@ -76,9 +76,9 @@ const error = {
  * @typedef {object} RequestConfig
  * @property {string} url A URL or URL pattern to request. May contain placeholders mapping to params like `:paramname`
  * @property {string} body Body of the request in case it is a POST/PUT/PATCH etc
- * @property {{path:?string,metadata:?string,call:?Function}} [out]
+ * @property {{path:?string,key:?string,call:?Function}} [out]
  * Defines What to do with the request response. Can be `{ path: 'file/in/:param/source.html' }` to output to a file in the metalsmith build.
- * Can be `{ metadata: 'nested.:param.key' }` to store the response in a metadata key. Both metadata keypaths & file paths may contain param placeholders.
+ * Can be `{ key: 'nested.:param.key' }` to store the response in a metadata key. Both metadata keypaths & file paths may contain param placeholders.
  * If more flexibility is required you can provide a function with the signature `out(response, files, metalsmith)`
  * @property {{name:value}[]} [params]
  * An array of params objects for each of which the `url` will be requested.
@@ -181,7 +181,7 @@ function normalizeOptions(options, onerror) {
  *
  * metalsmith.use(requests({  // single GET request set
  *   url: 'https://www.google.com/humans.txt',
- *   out: { metadata: 'google.humans' }
+ *   out: { key: 'google.humans' }
  * }))
  *
  * metalsmith.use(requests({  // parameterized w options
