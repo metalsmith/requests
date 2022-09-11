@@ -1,4 +1,5 @@
-import { dset } from 'dset'
+/* eslint-disable-next-line import/no-internal-modules */
+import { dset } from 'dset/merge'
 import { send } from 'httpie'
 import createDebug from 'debug'
 import { URL } from 'url'
@@ -138,6 +139,9 @@ function processRequestConfig(options, onerror) {
   }
   if (out.path && !out.key) out.key = 'contents'
 
+  // regexparam.inject doesn't work on dot-delimited paths, convert to slash first
+  const keyAsPath = out.key && out.key.replace(/\./g, '/')
+
   const ret = paramsets.map((paramset) => {
     return {
       params: paramset,
@@ -146,12 +150,12 @@ function processRequestConfig(options, onerror) {
         typeof out === 'function'
           ? out
           : {
-              key: out.key ? inject(out.key, paramset).replace(/^\//, '') : null,
+              // remove leading slash inserted by regexparam.inject + for key, re-replace slashes with dots
+              key: out.key ? inject(keyAsPath, paramset).replace(/^\//, '').replace(/\//g, '.') : null,
               path: out.path ? inject(out.path, paramset).replace(/^\//, '') : null
             },
       httpOptions,
-      body: options.body ? options.body : null,
-      process
+      body: options.body ? options.body : null
     }
   })
   return ret
