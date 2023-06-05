@@ -1,7 +1,6 @@
 /* eslint-env node, mocha */
 const assert = require('assert')
 const equals = require('assert-dir-equal')
-const debug = require('debug')
 
 const Metalsmith = require('metalsmith')
 const { name } = require('../package.json')
@@ -56,18 +55,25 @@ describe('@metalsmith/requests', function () {
   describe('should support out option matrix', function () {
     it('!out.key && !out.path: should default out option to debug logging', function (done) {
       let res
-      const cachedDebugState = debug.enabled('@metalsmith/requests')
-      debug.enable('@metalsmith/requests')
-      debug.log = (log) => {
-        res = log
-      }
-      Metalsmith(fixture('default'))
+      const ms = Metalsmith(fixture('default'))
+      const customDebugger = () => function() { res = arguments[1] }
+      customDebugger.enable = () => {}
+      customDebugger.disable = () => {}
+      customDebugger.info = () => { }
+      customDebugger.error = () => { }
+      customDebugger.warn = () => { }
+      ms.debug = customDebugger
+      ms
+        .env('DEBUG', '@metalsmith/requests*')
         .use(plugin('https://www.google.com/humans.txt'))
         .process((err) => {
           if (err) done(err)
-          assert(!!res.match('Google is built by a large team of engineers'))
-          if (!cachedDebugState) debug.disable()
-          done()
+          try {
+            assert(!!res.data.match('Google is built by a large team of engineers'))
+            done()
+          } catch (err) {
+            done(err)
+          }
         })
     })
 

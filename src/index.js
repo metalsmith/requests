@@ -1,18 +1,16 @@
 /* eslint-disable-next-line import/no-internal-modules */
 import { dset } from 'dset/merge'
 import { send } from 'httpie'
-import createDebug from 'debug'
 import { URL } from 'url'
 import { inject } from 'regexparam'
 
-const debug = createDebug('@metalsmith/requests')
 const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 
 function toMetalsmith({ key, path }, files, metalsmith) {
   // default to logging output
   if (!key && !path) {
     return (value) =>
-      debug('%o', {
+      metalsmith.debug('@metalsmith/requests')('%o', {
         data: value.data,
         statusCode: value.statusCode,
         headers: value.headers
@@ -207,6 +205,7 @@ function normalizeOptions(options, onerror) {
  */
 function initRequests(options) {
   return function requests(files, metalsmith, done) {
+    const debug = metalsmith.debug('@metalsmith/requests')
     done = done || (() => {})
     options = normalizeOptions(options, done)
     const promises = []

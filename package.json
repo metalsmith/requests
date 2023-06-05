@@ -36,7 +36,6 @@
   },
   "homepage": "https://github.com/metalsmith/requests#readme",
   "dependencies": {
-    "debug": "^4.3.4",
     "dset": "^3.1.1",
     "httpie": "^1.1.2",
     "regexparam": "^2.0.1"
@@ -48,7 +47,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
-    "metalsmith": "^2.4.2",
+    "metalsmith": "^2.5.0",
     "microbundle": "^0.15.1",
     "mocha": "^9.2.2",
     "nyc": "^15.1.0",
@@ -56,7 +55,7 @@
     "release-it": "^15.4.1"
   },
   "peerDependencies": {
-    "metalsmith": "^2.4.1"
+    "metalsmith": "^2.5.0"
   },
   "scripts": {
     "changelog": "auto-changelog -u --commit-limit false --ignore-commit-pattern '^((dev|chore|ci):|Release)'",
