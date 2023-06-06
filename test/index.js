@@ -1,15 +1,18 @@
 /* eslint-env node, mocha */
-const assert = require('assert')
-const equals = require('assert-dir-equal')
+import assert from 'node:assert'
+import { resolve, dirname } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import { fileURLToPath } from 'node:url'
+import equals from 'assert-dir-equal'
+import Metalsmith from 'metalsmith'
+import plugin from '../src/index.js'
 
-const Metalsmith = require('metalsmith')
-const { name } = require('../package.json')
-
-/* eslint-disable-next-line node/no-missing-require */
-const plugin = require('..')
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const { name } = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8'))
 
 function fixture(p) {
-  return require('path').resolve(__dirname, 'fixtures', p)
+  return resolve(__dirname, 'fixtures', p)
 }
 
 const googleHumansTxt =
@@ -19,8 +22,6 @@ describe('@metalsmith/requests', function () {
   let server
 
   before(() => {
-    const { createServer } = require('http')
-
     function handler(req, res) {
       res.setHeader('Content-Type', 'application/json')
       res.end('{invalid_json')
@@ -56,15 +57,17 @@ describe('@metalsmith/requests', function () {
     it('!out.key && !out.path: should default out option to debug logging', function (done) {
       let res
       const ms = Metalsmith(fixture('default'))
-      const customDebugger = () => function() { res = arguments[1] }
+      const customDebugger = () =>
+        function () {
+          res = arguments[1]
+        }
       customDebugger.enable = () => {}
       customDebugger.disable = () => {}
-      customDebugger.info = () => { }
-      customDebugger.error = () => { }
-      customDebugger.warn = () => { }
+      customDebugger.info = () => {}
+      customDebugger.error = () => {}
+      customDebugger.warn = () => {}
       ms.debug = customDebugger
-      ms
-        .env('DEBUG', '@metalsmith/requests*')
+      ms.env('DEBUG', '@metalsmith/requests*')
         .use(plugin('https://www.google.com/humans.txt'))
         .process((err) => {
           if (err) done(err)
