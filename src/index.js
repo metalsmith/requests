@@ -72,10 +72,18 @@ const error = {
 }
 
 /**
+ * @callback OutFunction
+ * @param {import('httpie').HttpieResponse} res
+ * @param {import('metalsmith').Files} files
+ * @param {import('metalsmith')} metalsmith
+ * @returns {void}
+ */
+
+/**
  * @typedef {object} RequestConfig
  * @property {string} url A URL or URL pattern to request. May contain placeholders mapping to params like `:paramname`
- * @property {string} body Body of the request in case it is a POST/PUT/PATCH etc
- * @property {{path:?string,key:?string,call:?Function}} [out]
+ * @property {string} [body] Body of the request in case it is a POST/PUT/PATCH etc
+ * @property {{path:?string,key:?string}|OutFunction} [out]
  * Defines What to do with the request response. Can be `{ path: 'file/in/:param/source.html' }` to output to a file in the metalsmith build.
  * Can be `{ key: 'nested.:param.key' }` to store the response in a metadata key. Both metadata keypaths & file paths may contain param placeholders.
  * If more flexibility is required you can provide a function with the signature `out(response, files, metalsmith)`
@@ -92,7 +100,7 @@ const error = {
 /**
  * Normalize plugin options
  * @param {Options} [options]
- * @returns {Object}
+ * @returns {import('metalsmith').Plugin}
  */
 function processRequestConfig(options, onerror) {
   // shorthand
