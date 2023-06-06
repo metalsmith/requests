@@ -203,7 +203,7 @@ function normalizeOptions(options, onerror) {
  * }))
  * ```
  */
-function initRequests(options) {
+function requests(options) {
   return function requests(files, metalsmith, done) {
     const debug = metalsmith.debug('@metalsmith/requests')
     done = done || (() => {})
@@ -260,4 +260,4 @@ function initRequests(options) {
   }
 }
 
-export default initRequests
+export default requests
