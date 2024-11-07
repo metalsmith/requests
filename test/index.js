@@ -247,8 +247,12 @@ describe('@metalsmith/requests', function () {
           })
         )
         .process((err) => {
-          assert.strictEqual(err.toString().slice(0, 40), 'TypeError [ERR_INVALID_URL]: Invalid URL')
-          done()
+          try {
+            assert.match(err.toString(), /TypeError( \[ERR_INVALID_URL\])*: Invalid URL/)
+            done()
+          } catch (err) {
+            done(err)
+          }
         })
     })
 
