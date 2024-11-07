@@ -37,9 +37,9 @@
   },
   "homepage": "https://github.com/metalsmith/requests#readme",
   "dependencies": {
-    "dset": "^3.1.1",
+    "dset": "^3.1.4",
     "httpie": "^1.1.2",
-    "regexparam": "^2.0.1"
+    "regexparam": "^3.0.0"
   },
   "devDependencies": {
     "assert-dir-equal": "^1.1.0",
